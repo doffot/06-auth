@@ -1,4 +1,7 @@
 
+//no funciona por el nombre del archivo
+//demostracion
+
 
 import type { MiddlewareNext } from "astro";
 import { defineMiddleware } from "astro:middleware";
@@ -48,6 +51,37 @@ export const onRequest = defineMiddleware(async({ url, request }, next) => {
 }; */
 
 const checkLocalAuth = (authHeaders: string | null, next: MiddlewareNext) => {  
-    
-    return next()
+    if (!authHeaders) {  
+        return new Response('Auth Necesaria', {  
+            status: 401,  
+            headers: {  
+                'WWW-Authenticate': 'Basic realm="Secure Area"',  
+            },  
+        });  
+    }  
+
+    // Extracción del token de autorización  
+    const authValue = authHeaders.split(' ').at(-1); // Obtiene el segundo valor después de 'Basic'  
+    if (!authValue) {  
+        return new Response('Auth Necesaria', {  
+            status: 401,  
+            headers: {  
+                'WWW-Authenticate': 'Basic realm="Secure Area"',  
+            },  
+        });  
+    }  
+
+    // Decodifica el valor y lo separa en usuario y contraseña  
+    const decodeValue = atob(authValue).split(':');  
+    const [ user, password ] = decodeValue;
+
+    if ( user === 'admin' && password === 'admin' ){
+        return next();
+    }
+    return new Response('Auth Necesaria', {  
+        status: 401,  
+        headers: {  
+            'WWW-Authenticate': 'Basic realm="Secure Area"',  
+        },  
+    });  
 };
